@@ -1,6 +1,7 @@
 
 run: fmt
 	go run main.go
+	rm -rf docs
 	mv site docs
 
 build: fmt
