@@ -166,6 +166,7 @@ func main() {
 								if bytes, err := ioutil.ReadFile(filepath.Join(dir, file.Name())); err == nil {
 									tmpfile.Write([]byte(md.RenderToString(bytes)))
 								}
+								os.Remove(filepath.Join(dir, file.Name()))
 								count++
 							}
 						}
