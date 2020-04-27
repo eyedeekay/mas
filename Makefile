@@ -1,6 +1,7 @@
 
 run: fmt
-	go run main.go "this is a test"
+	go run main.go
+	mv site docs
 
 build: fmt
 	go build -ldflags '-w -extldflags "-static"' -tags netgo -o .
