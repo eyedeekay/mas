@@ -25,8 +25,8 @@ func checkcssdir(dir string) string {
 	}
 	ret := ""
 	for _, style := range files {
-		ret += `<link rel="stylesheet" href="` + style + `">
-`
+		ret += `
+      <link rel="stylesheet" href="` + style + `">`
 	}
 	return ret
 }
@@ -47,10 +47,36 @@ func checkjsdir(dir string) string {
 	}
 	ret := ""
 	for _, script := range files {
-		ret += `<script src="` + script + `"></script>
-`
+		ret += `
+      <script src="` + script + `"></script>`
 	}
 	return ret
+}
+
+func findTitle(markdown string) string {
+	return "Placeholder"
+}
+
+func top(title, jdir, cdir string) []byte {
+	return []byte(`<!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>` + title + `</title>` + checkcssdir(cdir) + `` + checkjsdir(jdir) + `
+    </head>
+    <body>
+`)
+}
+
+func argCat() string {
+	var args string
+	if len(os.Args) < 2 {
+		return "MAS is a simple site generator"
+	}
+	for _, arg := range os.Args[1:] {
+		args += arg + " "
+	}
+	return strings.TrimSuffix(args, " ")
 }
 
 var bottom = `  </body>
@@ -95,22 +121,12 @@ func main() {
 			copy.Copy(imgdir, imgbdir)
 		}
 	}
-	var top = `<!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="utf-8">
-      <title>title</title>
-      ` + checkcssdir(cssbdir) + `
-      ` + checkjsdir(jsbdir) + `
-    </head>
-    <body>
-`
+	head := top(argCat(), jsbdir, cssbdir)
 	for _, file := range files {
 		if strings.Contains(file, "/") {
 			if err := os.MkdirAll(filepath.Join(builddir, filepath.Dir(file)), 0755); err == nil {
 				if sitefile, err := os.Create(filepath.Join(builddir, filepath.Dir(file), filepath.Base(file)+".html")); err == nil {
 					if bytes, err := ioutil.ReadFile(file); err == nil {
-						fmt.Println(md.RenderToString(bytes))
 						sitefile.Write([]byte(md.RenderToString(bytes)))
 					}
 					sitefile.Close()
@@ -119,7 +135,6 @@ func main() {
 		} else {
 			if sitefile, err := os.Create(filepath.Join(builddir, file+".html")); err == nil {
 				if bytes, err := ioutil.ReadFile(file); err == nil {
-					fmt.Println(md.RenderToString(bytes))
 					sitefile.Write([]byte(md.RenderToString(bytes)))
 				}
 				sitefile.Close()
@@ -140,7 +155,7 @@ func main() {
 	}
 	for _, dir := range dirs {
 		tmpfile, err := os.Create(filepath.Join(dir, "index.html"))
-		tmpfile.Write([]byte(top))
+		tmpfile.Write(head)
 		count := 0
 		if err == nil {
 			if files, err := ioutil.ReadDir(dir); err == nil {
@@ -149,7 +164,6 @@ func main() {
 						if file.Name()[len(file.Name())-5:] == ".html" {
 							if file.Name() != "index.html" {
 								if bytes, err := ioutil.ReadFile(filepath.Join(dir, file.Name())); err == nil {
-									//fmt.Println(md.RenderToString(bytes))
 									tmpfile.Write([]byte(md.RenderToString(bytes)))
 								}
 								count++
@@ -163,6 +177,9 @@ func main() {
 		tmpfile.Close()
 		if count == 0 {
 			os.Remove(filepath.Join(dir, "index.html"))
+		} else {
+			f, _ := ioutil.ReadFile(filepath.Join(dir, "index.html"))
+			fmt.Println(string(f))
 		}
 	}
 }
