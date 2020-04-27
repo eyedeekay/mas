@@ -75,8 +75,10 @@ func main() {
 	builddir := filepath.Join(root, "site/")
 	cssdir := filepath.Join(root, "css/")
 	jsdir := filepath.Join(root, "js/")
+	imgdir := filepath.Join(root, "images/")
 	cssbdir := filepath.Join(builddir, "css/")
 	jsbdir := filepath.Join(builddir, "js/")
+	imgbdir := filepath.Join(builddir, "images/")
 	os.MkdirAll(builddir, 0755)
 	if file, err := os.Stat(cssdir); !os.IsNotExist(err) {
 		if file.IsDir() {
@@ -86,6 +88,11 @@ func main() {
 	if file, err := os.Stat(jsdir); !os.IsNotExist(err) {
 		if file.IsDir() {
 			copy.Copy(jsdir, jsbdir)
+		}
+	}
+	if file, err := os.Stat(imgdir); !os.IsNotExist(err) {
+		if file.IsDir() {
+			copy.Copy(imgdir, imgbdir)
 		}
 	}
 	var top = `<!DOCTYPE html>
