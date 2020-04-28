@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/yosssi/gohtml"
 )
 
 func checkcssdir(dir string) string {
@@ -162,7 +163,7 @@ func main() {
 			if err := os.MkdirAll(filepath.Join(builddir, filepath.Dir(file)), 0755); err == nil {
 				if sitefile, err := os.Create(filepath.Join(builddir, filepath.Dir(file), filepath.Base(file)+".html")); err == nil {
 					if bytes, err := ioutil.ReadFile(file); err == nil {
-						sitefile.Write([]byte(md.RenderToString(bytes)))
+						sitefile.Write([]byte(gohtml.Format(md.RenderToString(bytes))))
 					}
 					sitefile.Close()
 				}
@@ -170,7 +171,7 @@ func main() {
 		} else {
 			if sitefile, err := os.Create(filepath.Join(builddir, file+".html")); err == nil {
 				if bytes, err := ioutil.ReadFile(file); err == nil {
-					sitefile.Write([]byte(md.RenderToString(bytes)))
+					sitefile.Write([]byte(gohtml.Format(md.RenderToString(bytes))))
 				}
 				sitefile.Close()
 			}
