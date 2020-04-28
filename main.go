@@ -65,7 +65,7 @@ func top(title, jdir, cdir string) []byte {
       <title>` + title + `</title>` + checkcssdir(cdir) + `` + checkjsdir(jdir) + `
     </head>
     <body>
-    <!-- NAV AREA -->
+      <!-- NAV AREA -->
 `)
 }
 
