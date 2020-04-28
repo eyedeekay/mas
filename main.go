@@ -108,7 +108,7 @@ func classify(bytes []byte, name, side string) string {
 		hs := strings.Replace(
 			ps,
 			"<h1>",
-			`<p class="`+deSuffix(name)+`">`,
+			`<h1 class="`+deSuffix(name)+`">`,
 			-1,
 		)
 		return hs
