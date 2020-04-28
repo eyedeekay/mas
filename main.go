@@ -243,7 +243,7 @@ func main() {
 		if count == 0 {
 			os.Remove(filepath.Join(dir, "index.html"))
 		} else {
-            os.Remove(filepath.Join(dir, "index.md.html"))
+			os.Remove(filepath.Join(dir, "index.md.html"))
 			f, _ := ioutil.ReadFile(filepath.Join(dir, "index.html"))
 			fmt.Println(string(f))
 		}
