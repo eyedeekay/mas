@@ -79,6 +79,10 @@ func argCat() string {
 	return strings.TrimSuffix(args, " ")
 }
 
+func deSuffix(name string) string {
+    return strings.Replace(strings.SplitN(name, ".", 2)[0], strings.SplitN(name, ".", 2)[1])
+}
+
 var bottom = `  </body>
 </html>`
 
@@ -164,7 +168,7 @@ func main() {
 						if file.Name()[len(file.Name())-5:] == ".html" {
 							if file.Name() != "index.html" {
 								if bytes, err := ioutil.ReadFile(filepath.Join(dir, file.Name())); err == nil {
-									tmpfile.Write([]byte(md.RenderToString(bytes)))
+									tmpfile.Write([]byte(strings.Replace(md.RenderToString(bytes), "<p>", `<p class="`+deSuffix(file.Name())+`">`)))
 								}
 								os.Remove(filepath.Join(dir, file.Name()))
 								count++
