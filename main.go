@@ -112,9 +112,9 @@ func classify(bytes []byte, name, side string) string {
 			`<h1 class="`+deSuffix(name)+`">`,
 			-1,
 		)
-		return hs
+		return gohtml.Format(hs)
 	}
-	return string(bytes)
+	return gohtml.Format(string(bytes))
 
 }
 
