@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 	"github.com/otiai10/copy"
+	"github.com/yosssi/gohtml"
 	"gitlab.com/golang-commonmark/markdown"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-	"github.com/yosssi/gohtml"
 )
 
 func checkcssdir(dir string) string {
