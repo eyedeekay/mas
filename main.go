@@ -26,7 +26,7 @@ func checkcssdir(dir string) string {
 	ret := ""
 	for _, style := range files {
 		ret += `
-      <link rel="stylesheet" href="` + style + `">`
+      <link rel="stylesheet" href="/` + strings.Replace(style, "site/", "", -1) + `">`
 	}
 	return ret
 }
@@ -48,7 +48,7 @@ func checkjsdir(dir string) string {
 	ret := ""
 	for _, script := range files {
 		ret += `
-      <script src="` + script + `"></script>`
+      <script src="/` + strings.Replace(script, "site/", "", -1) + `"></script>`
 	}
 	return ret
 }
@@ -65,6 +65,7 @@ func top(title, jdir, cdir string) []byte {
       <title>` + title + `</title>` + checkcssdir(cdir) + `` + checkjsdir(jdir) + `
     </head>
     <body>
+    <!-- NAV AREA -->
 `)
 }
 
@@ -80,11 +81,41 @@ func argCat() string {
 }
 
 func deSuffix(name string) string {
-    return strings.Replace(strings.SplitN(name, ".", 2)[0], strings.SplitN(name, ".", 2)[1])
+	if len(strings.SplitN(name, ".", 2)) > 1 {
+		r := strings.Replace(strings.Replace(name, strings.SplitN(name, ".", 2)[1], "", -1), ".", "", -1)
+		fmt.Println("Stripping suffix from filename", name)
+		return r
+	}
+	return ""
 }
 
 var bottom = `  </body>
 </html>`
+
+func classify(bytes []byte, name, side string) string {
+	var str string
+	if side != "" {
+		str = strings.Replace(string(bytes), `<!-- NAV AREA -->`, side, -1)
+	} else {
+		str = string(bytes)
+	}
+	if name != "" {
+		ps := strings.Replace(
+			str,
+			"<p>",
+			`<p class="`+deSuffix(name)+`">`,
+			-1)
+		hs := strings.Replace(
+			ps,
+			"<h1>",
+			`<p class="`+deSuffix(name)+`">`,
+			-1,
+		)
+		return hs
+	}
+	return string(bytes)
+
+}
 
 func main() {
 	var files []string
@@ -157,18 +188,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	var sidebar string
 	for _, dir := range dirs {
-		tmpfile, err := os.Create(filepath.Join(dir, "index.html"))
+		tmpfile, err := os.Create(filepath.Join(dir, "index.md.html"))
 		tmpfile.Write(head)
 		count := 0
 		if err == nil {
 			if files, err := ioutil.ReadDir(dir); err == nil {
 				for _, file := range files {
-					if len(file.Name()) > 5 {
-						if file.Name()[len(file.Name())-5:] == ".html" {
-							if file.Name() != "index.html" {
+					if len(file.Name()) > 8 {
+						if file.Name()[len(file.Name())-8:] == ".md.html" {
+							if file.Name() != "index.md.html" {
 								if bytes, err := ioutil.ReadFile(filepath.Join(dir, file.Name())); err == nil {
-									tmpfile.Write([]byte(strings.Replace(md.RenderToString(bytes), "<p>", `<p class="`+deSuffix(file.Name())+`">`)))
+									tmpfile.Write([]byte(classify(bytes, file.Name(), "")))
 								}
 								os.Remove(filepath.Join(dir, file.Name()))
 								count++
@@ -179,6 +211,34 @@ func main() {
 			}
 		}
 		tmpfile.Write([]byte(bottom))
+		tmpfile.Close()
+		if count == 0 {
+			os.Remove(filepath.Join(dir, "index.md.html"))
+		} else {
+			fp := filepath.Join(dir, "index.md.html")
+
+			sidebar = `[` + dir + `](` + strings.Replace(strings.Replace(fp, ".md", "", -1), "site/", "", 1) + `)`
+			f, _ := ioutil.ReadFile(filepath.Join(dir, "index.md.html"))
+			fmt.Println(string(f))
+		}
+
+	}
+	for _, dir := range dirs {
+		tmpfile, err := os.Create(filepath.Join(dir, "index.html"))
+		count := 0
+		if err == nil {
+			if files, err := ioutil.ReadDir(dir); err == nil {
+				for _, file := range files {
+					if file.Name() == "index.md.html" {
+						if bytes, err := ioutil.ReadFile(filepath.Join(dir, file.Name())); err == nil {
+							tmpfile.Write([]byte(classify(bytes, file.Name(), md.RenderToString([]byte(sidebar)))))
+						}
+						//os.Remove(filepath.Join(dir, file.Name()))
+						count++
+					}
+				}
+			}
+		}
 		tmpfile.Close()
 		if count == 0 {
 			os.Remove(filepath.Join(dir, "index.html"))
